@@ -1,3 +1,2 @@
-hello world
-
-I am nghia
+A NEW START FOR HEROES!
+LEGENDS GET BEGINNING HERE!
