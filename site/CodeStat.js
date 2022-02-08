@@ -1,9 +1,31 @@
-var http = require('http');
+var http = require('http'), fs = require('fs');
 var url = require('url');
-var randomNumber = require('./lib/RandomNumber.js');
+
+function serveStaticFile(res, path, contentType, responseCode){
+    if(!responseCode) responseCode = 200;
+    fs.readFile(__dirname + path, function(err, data){
+        if(err){
+            res.writeHead(500, {'Content-Type' : 'text/plain'});
+            res.end('500 - Bruh');
+        }else{
+            res.writeHead(responseCode, {'Content-Type':contentType});
+            res.end(data);
+
+        }
+    });
+}
+
 http.createServer(function (req, res){
-    res.writeHead(200, {'Content-Type': 'text/html'});
-    var q = url.parse(req.url, true).query;
-    var txt = q.year + " " + q.month
-    res.end(txt+'Hello World'+randomNumber.RandomNumber());
+    var path = req.url.replace(/\/?(?:\?.*)?$/, '').toLowerCase();
+    switch (path) {
+        case '':
+            serveStaticFile(res, '/public/home.html','text/html');
+            break
+        case '/aboutus':
+            serveStaticFile(res, '/public/aboutus.html', 'text/html');
+            break
+        default:
+            serveStaticFile(res, '/public/notfound.html', 'text/html', 404);
+            break
+    }
 }).listen(8080);
