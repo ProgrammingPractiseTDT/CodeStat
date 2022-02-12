@@ -1,31 +1,37 @@
-var http = require('http'), fs = require('fs');
-var url = require('url');
+var express = require('express')
 
-function serveStaticFile(res, path, contentType, responseCode){
-    if(!responseCode) responseCode = 200;
-    fs.readFile(__dirname + path, function(err, data){
-        if(err){
-            res.writeHead(500, {'Content-Type' : 'text/plain'});
-            res.end('500 - Bruh');
-        }else{
-            res.writeHead(responseCode, {'Content-Type':contentType});
-            res.end(data);
+var app = express();
 
-        }
-    });
-}
+var randomnumber = require('./lib/RandomNumber.js');
 
-http.createServer(function (req, res){
-    var path = req.url.replace(/\/?(?:\?.*)?$/, '').toLowerCase();
-    switch (path) {
-        case '':
-            serveStaticFile(res, '/public/home.html','text/html');
-            break
-        case '/aboutus':
-            serveStaticFile(res, '/public/aboutus.html', 'text/html');
-            break
-        default:
-            serveStaticFile(res, '/public/notfound.html', 'text/html', 404);
-            break
-    }
-}).listen(8080);
+var handlebars = require('express3-handlebars').create({defaultLayout: 'main'});
+app.engine('handlebars', handlebars.engine);
+app.set('view engine', 'handlebars');
+
+app.use(express.static(__dirname + '/public'));
+
+app.set('port', process.env.PORT || 3000);
+
+app.get('/', function(req, res){
+    res.render('home');
+});
+
+app.get('/about', function(req, res){
+    var randomNumber = randomnumber.RandomNumber();
+    res.render('about',{random : randomNumber});
+});
+
+app.use(function(req, res){
+    res.status(404);
+    res.render('404');
+});
+
+app.use(function(err, req, res, next){
+    console.error(err.stack);
+    res.status(500);
+    res.render('500');
+});
+
+app.listen(app.get('port'), function(){
+    console.log('Express started on http://localhost:' + app.get('port'));
+});
